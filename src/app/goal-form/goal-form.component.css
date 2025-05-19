@@ -1,0 +1,85 @@
+/* Modal background */
+.modal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+  }
+  
+  /* Modal content */
+  .modal-content {
+    background: white;
+    padding: 20px;
+    width: 400px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+  }
+  
+  /* Close button */
+  .close {
+    font-size: 24px;
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    cursor: pointer;
+  }
+  
+  /* Form elements */
+  form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  label {
+    font-size: 16px;
+    margin-top: 10px;
+    text-align: left;
+  }
+  
+  input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  /* Button styling */
+  .button-group {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  button {
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 5px;
+  }
+  
+  button[type="button"] {
+    background: #007bff;
+    color: white;
+  }
+  
+  button[type="button"]:hover {
+    background: #0056b3;
+  }
+  
+  button[type="button"]:nth-child(2) {
+    background: #dc3545;
+    color: white;
+  }
+  
+  button[type="button"]:nth-child(2):hover {
+    background: #c82333;
+  }
+  

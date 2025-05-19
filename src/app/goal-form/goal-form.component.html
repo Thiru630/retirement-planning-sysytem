@@ -1,0 +1,23 @@
+<div class="modal">
+  <div class="modal-content">
+    <span class="close" (click)="goalSet.emit(null)">&times;</span>
+    <h2>Set Your Goal</h2>
+    <form>
+      <label>Retirement Age:</label>
+      <input type="number" [(ngModel)]="retirementAge" name="retirementAge" required min="19">
+      <p *ngIf="retirementAge <= currentAge" class="error-message">Retirement age must be greater than current age.</p>
+  
+      <label>Target Savings:</label>
+      <input type="number" [(ngModel)]="targetSavings" name="targetSavings" required min="1">
+  
+      <label>Current Savings:</label>
+      <input type="number" [(ngModel)]="currentSavings" name="currentSavings" required min="0">
+      <p *ngIf="currentAge < 18" class="error-message">Current age must be at least 18.</p>
+
+      <div class="button-group">
+        <button type="button" (click)="saveGoal()">Save</button>
+        <button type="button" (click)="goalSet.emit(null)">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>

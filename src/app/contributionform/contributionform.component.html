@@ -1,0 +1,21 @@
+<div class="modal">
+    <div class="modal-content">
+      <span class="close" (click)="contributionAdded.emit(null)">&times;</span>
+      <h2>Add Your Contribution</h2>
+      <form>
+        <label>Month:</label>
+        <input type="number" [(ngModel)]="month" name="month" required><br>
+  
+        <label>Year:</label>
+        <input type="number" [(ngModel)]="year" name="year" required><br>
+  
+        <label>Monthly Investment:</label>
+        <input type="number" [(ngModel)]="monthlyInvestment" name="monthlyInvestment" required><br>
+
+        <div class="button-group">
+          <button type="button" (click)="submitContribution()">Save</button>
+          <button type="button" (click)="contributionAdded.emit(null)">Cancel</button>
+        </div>
+      </form>
+    </div>
+</div>
