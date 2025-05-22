@@ -1,53 +1,60 @@
-import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { GoalService } from '../goalservice.service';
 import { FinancialyeardataService } from '../financialyeardata.service';
+import { ProgressService } from '../progress.service';
 import { CommonModule } from '@angular/common';
 import { GoalFormComponent } from '../goal-form/goal-form.component';
 import { ContributionFormComponent } from '../contributionform/contributionform.component';
-import { UserData } from '../user.interface'; // ✅ Import UserData for strict typing
+import { UserData } from '../user.interface';
 
 @Component({
   selector: 'app-user-dashboard',
   standalone: true,
-  imports: [CommonModule, GoalFormComponent, ContributionFormComponent], 
+  imports: [CommonModule, GoalFormComponent, ContributionFormComponent],
   templateUrl: './user-dashboard.component.html',
   styleUrls: ['./user-dashboard.component.css']
 })
-
 export class UserDashboardComponent implements OnInit {
- // @Input() userData!: UserData | null; // ✅ Accepts both UserData and null
-  @Input() goalData!: any; // ✅ Receives goal data from parent
-  @Output() goalUpdated = new EventEmitter<any>(); // ✅ Sends updated goal data
-  @Output() contributionAdded = new EventEmitter<any>(); // ✅ Sends latest contribution
-  @Input() userData: any // ✅ Allows null values safely
-
-  profileId?: number;
+  userData: UserData | null = null;
+  profileId: number = 0;
   goalExists: boolean = false;
+  lcExists: boolean = false;
+  goalData: any;
+  latestContribution: any;
+  userProgress: number=0;
   showGoalModal: boolean = false;
   showContributionModal: boolean = false;
-  latestContribution: any = null;
+  showProgressModal: boolean = false;
 
   constructor(
-    private router: Router, 
+    private route: ActivatedRoute,
+    private router: Router,
     private goalService: GoalService,
-    private financialYearService: FinancialyeardataService, 
-    private changeDetectorRef: ChangeDetectorRef
+    private financialYearService: FinancialyeardataService,
+    private progressService: ProgressService
   ) {}
 
   ngOnInit(): void {
-    console.log("✅ User Data in Dashboard:", this.userData); // Debugging log
-  
-    // if (!this.userData || !this.userData.id) {
-    //   console.warn('⚠️ No user data received. Redirecting to login...');
-    //   this.router.navigate(['/login']);
-    //   return;
-    // }
-  
-    this.profileId = this.userData.id || 0;  // ✅ Assign fallback values
-    this.checkGoal();
+    this.route.queryParams.subscribe(params => {
+      if (params['id']) {
+        this.userData = {
+          id: +params['id'],
+          firstName: params['firstName'],
+          lastName: params['lastName'],
+          email: params['email'],
+          age: +params['age'],
+          gender: params['gender']
+        };
+        this.profileId = this.userData.id;
+        console.log("✅ User Data from QueryParams:", this.userData);
+        this.checkGoal();
+      } else {
+        console.warn('⚠️ No user data found. Redirecting to login...');
+        this.router.navigate(['/login']);
+      }
+    });
   }
-  
 
   checkGoal(): void {
     if (!this.profileId) {
@@ -58,11 +65,9 @@ export class UserDashboardComponent implements OnInit {
     this.goalService.checkGoal(this.profileId).subscribe({
       next: (data) => {
         console.log('✅ Goal data from API:', data);
-
         this.goalData = data;
         this.goalExists = true;
-        this.goalUpdated.emit(this.goalData); // ✅ Emit updated goal data
-        this.changeDetectorRef.detectChanges();
+        this.getUserProgress();
       },
       error: (err) => {
         if (err.status === 404) {
@@ -75,39 +80,52 @@ export class UserDashboardComponent implements OnInit {
     });
   }
 
-  openGoalDialog(): void {
-    this.showGoalModal = true;
-  }
-
-  openContributionDialog(): void {
-    this.showContributionModal = true;
-  }
-
   handleGoalSet(goal: any): void {
-    if (!goal || !goal.targetSavings || goal.targetSavings <= 0) {
+    if (!goal?.targetSavings || goal.targetSavings <= 0) {
       console.warn('⚠️ Invalid goal data.');
       return;
     }
-
+  
     console.log("✅ Goal Received:", goal);
-
+  
     this.goalService.setGoal(goal).subscribe({
       next: (data) => {
         console.log('✅ Goal data saved:', data);
-
         this.goalData = data.goalDetails;
         this.goalExists = true;
-        this.goalUpdated.emit(this.goalData); // ✅ Emit updated goal data
-        this.changeDetectorRef.detectChanges();
+        this.getUserProgress(); // Fetch updated progress once goal is set
       },
       error: (err) => console.error("❌ Error Saving Goal:", err)
     });
-
+  
     this.showGoalModal = false;
   }
-
+  
+  getUserProgress(): void {
+    if (!this.goalData?.goalId || !this.goalData?.targetSavings) {
+      console.warn('⚠️ Goal ID or Target Savings is missing.');
+      return;
+    }
+  
+    this.progressService.getProgress(this.goalData.goalId).subscribe({
+      next: (data) => {
+        console.log('🔍 User progress fetched:', data);
+  
+        // Use targetSavings from goalData instead of API response
+        if (data.totalSavings != null && this.goalData.targetSavings > 0) {
+          this.userProgress = Math.round((data.totalSavings / this.goalData.targetSavings) * 100);
+        } else {
+          console.warn('⚠️ Invalid savings data detected.');
+          this.userProgress = 0; // Default to 0% if data is incorrect
+        }
+      },
+      error: (err) => console.error('❌ Error fetching progress:', err)
+    });
+  }
+  
+  
   handleContributionAdded(contribution: any): void {
-    if (!contribution || contribution.monthlyInvestment <= 0) {
+    if (!contribution?.monthlyInvestment || contribution.monthlyInvestment <= 0) {
       console.warn('⚠️ Invalid contribution data.');
       return;
     }
@@ -117,10 +135,9 @@ export class UserDashboardComponent implements OnInit {
     this.financialYearService.addContribution(contribution).subscribe({
       next: (data) => {
         console.log("✅ Latest Contribution Saved:", data);
-
-        this.latestContribution = data;
-        this.contributionAdded.emit(this.latestContribution); // ✅ Emit latest contribution
-        this.changeDetectorRef.detectChanges();
+        this.latestContribution = data.data;
+        this.lcExists = true;
+        this.getUserProgress();
       },
       error: (err) => console.error("❌ Error Saving Contribution:", err)
     });
@@ -128,11 +145,20 @@ export class UserDashboardComponent implements OnInit {
     this.showContributionModal = false;
   }
 
+  openGoalDialog(): void {
+    this.showGoalModal = true;
+  }
+
+  openContributionDialog(): void {
+    this.showContributionModal = true;
+  }
+
+  openProgressDialog(): void {
+    this.showProgressModal = true;
+  }
+
   logout(): void {
     console.log("🚪 Logging out...");
-    this.userData = null;
-    this.goalData = null;
-    this.latestContribution = null;
     this.router.navigate(['/login']);
   }
 }

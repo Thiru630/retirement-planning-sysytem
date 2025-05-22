@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/router';
 import { UserData } from './user.interface';
 import { Observable } from 'rxjs';
 @Injectable({
@@ -9,7 +8,7 @@ import { Observable } from 'rxjs';
 })
 export class ProfileService {
   private loginUrl='http://localhost:5028/api/Profile/login';
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private http: HttpClient) {}
 
   login(email: string, password: string): Observable<UserData> { 
     return this.http.post<UserData>(this.loginUrl, { email, password });

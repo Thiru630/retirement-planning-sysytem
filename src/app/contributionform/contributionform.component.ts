@@ -15,7 +15,7 @@ export class ContributionFormComponent {
 
   month!: number;
   year!: number;
-  monthlyInvestment!: number; // Changed from bigint to number for form compatibility
+  monthlyInvestment!: number;
 
   submitContribution() {
     if (!this.validateContribution()) return;
@@ -27,28 +27,33 @@ export class ContributionFormComponent {
       monthlyInvestment: this.monthlyInvestment
     };
 
-    console.log("Contribution Submitted:", contribution);
-    this.contributionAdded.emit(contribution); // Emitting the data to the parent component
+    console.log("✅ Contribution Submitted:", contribution);
+    this.contributionAdded.emit(contribution); // Send data to parent
+  }
+
+  closeModal() {
+    console.log("🚪 Closing modal...");
+    this.contributionAdded.emit(null); // Signal parent to close modal
   }
 
   validateContribution(): boolean {
     if (!this.month || !this.year || !this.monthlyInvestment) {
-      console.warn("Missing contribution details. Please complete the form.");
+      console.warn("⚠️ Missing contribution details. Please complete the form.");
       return false;
     }
 
     if (this.month < 1 || this.month > 12) {
-      console.warn("Month must be between 1 and 12.");
+      console.warn("⚠️ Month must be between 1 and 12.");
       return false;
     }
 
     if (this.year < new Date().getFullYear()) {
-      console.warn("Year must be the current year or later.");
+      console.warn("⚠️ Year must be the current year or later.");
       return false;
     }
 
     if (this.monthlyInvestment <= 0) {
-      console.warn("Investment must be greater than zero.");
+      console.warn("⚠️ Investment must be greater than zero.");
       return false;
     }
 

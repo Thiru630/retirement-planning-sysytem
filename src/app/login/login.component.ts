@@ -1,29 +1,26 @@
-import { Component, EventEmitter, Output } from '@angular/core';
-import { Event, Router } from '@angular/router';
+import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 import { ProfileService } from '../profile.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { UserData } from '../user.interface'; // ✅ Correct Import
-import { UserDashboardComponent } from '../user-dashboard/user-dashboard.component';
+import { UserData } from '../user.interface'; // ✅ Strict typing
+
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule,UserDashboardComponent], 
+  imports: [CommonModule, FormsModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
   email: string = '';
   password: string = '';
-  loginSuccess: string = ''; // ✅ Now properly included for user feedback
-  userData: UserData | null = null; // ✅ Supports clearing data
-
-  @Output() userLoggedIn = new EventEmitter<any>(); // ✅ Emit typed user data
+  loginSuccess: string = '';
+  userData: UserData | null = null;
 
   constructor(private profileService: ProfileService, private router: Router) {}
 
   onSubmit(): void {
-    
     if (!this.email.trim() || !this.password.trim()) {
       this.loginSuccess = '⚠️ Please enter both email and password.';
       return;
@@ -34,13 +31,19 @@ export class LoginComponent {
     this.profileService.login(this.email, this.password).subscribe({
       next: (response: UserData) => {
         console.log("✅ Login Success:", response);
-
-        if (response?.id) { // ✅ Ensure user data contains valid info
-          this.userData = response;
+        if (response?.id) {
           this.loginSuccess = '✅ Login successful! Redirecting...';
-          console.log(this.userData);
-          this.userLoggedIn.emit(response); // ✅ Emit user data correctly
-          setTimeout(() => this.router.navigate(['/user-dashboard']), 500); // ✅ Delay for smoother transition
+
+          // ✅ Navigate with queryParams
+          this.router.navigate(['/user-dashboard'], {
+            queryParams: {
+              id: response.id,
+              firstName: response.firstName,
+              lastName: response.lastName,
+              email: response.email,
+              age: response.age
+            }
+          });
         } else {
           console.warn('⚠️ User data missing ID, login may have failed.');
           this.loginSuccess = '❌ Login failed. Please try again.';
@@ -55,9 +58,6 @@ export class LoginComponent {
 
   logout(): void {
     console.log("🚪 Logging out...");
-    this.userData = null; // ✅ Clear user data
-    this.userLoggedIn.emit(null); // ✅ Emit null to parent component
-    this.loginSuccess = '🔵 Logged out successfully!';
-    this.router.navigate(['/login']); 
+    this.router.navigate(['/login']);
   }
 }

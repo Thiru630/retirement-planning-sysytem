@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/router'; 
 import { Observable } from 'rxjs'; // Ensure Observable is imported
 
 @Injectable({
@@ -10,7 +9,7 @@ export class GoalService {
   private getgoalUrl = 'http://localhost:5028/api/Goal/getgoal';
   private setgoalUrl = 'http://localhost:5028/api/Goal/SetGoal';
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private http: HttpClient) {}
 
   checkGoal(ProfileId: number): Observable<any> {
     return this.http.get<any>(`${this.getgoalUrl}/${ProfileId}`);

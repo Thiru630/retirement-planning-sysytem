@@ -1,12 +1,12 @@
 <div class="dashboard-container">
   <nav class="navbar">
     <ul>
-      <li><a routerLink="/user-dashboard">Dashboard</a></li>
+      <h2>Retirement Planner</h2>
+      
       <li><button (click)="logout()">Logout</button></li>
     </ul>
   </nav>
 
-  <!-- Ensure userData is properly loaded -->
   <ng-container *ngIf="userData">
     <h1>Welcome {{ userData.firstName }} {{ userData.lastName }}</h1>
     <div>
@@ -18,39 +18,39 @@
   <div class="dashboard-content">
     <h1>User Dashboard</h1>
 
-    <!-- Show goal details if they exist -->
     <div *ngIf="goalExists && goalData">
       <h3>Your Retirement Goal</h3>
-      <p><strong>Target Savings:</strong> {{ goalData.targetSavings }}</p>
-      <p><strong>Current Savings:</strong> {{ goalData.currentSavings }}</p>
-      <p><strong>Monthly Contribution:</strong> {{ goalData.monthlyContribution }}</p>
-
-      <!-- Show "Add Contribution" button only if no latest contribution exists -->
+      <p><strong>Target Savings:</strong> {{ goalData?.targetSavings }}</p>
+      <p><strong>Current Savings:</strong> {{ goalData?.currentSavings }}</p>
+      <p><strong>Monthly Contribution:</strong> {{ goalData?.monthlyContribution }}</p>
       <button *ngIf="!latestContribution" (click)="openContributionDialog()">Add Contribution</button>
+      <button (click)="openProgressDialog()">View Progress</button>
     </div>
 
-    <!-- Show button if no goal exists -->
     <button *ngIf="!goalExists" (click)="openGoalDialog()">Set Goal</button>
 
-    <!-- Display only the latest contribution -->
     <div *ngIf="latestContribution">
       <h3>Latest Contribution</h3>
-      <p><strong>Month:</strong> {{ latestContribution.month }}</p>
-      <p><strong>Year:</strong> {{ latestContribution.year }}</p>
-      <p><strong>Investment:</strong> {{ latestContribution.monthlyInvestment }}</p>
+      <p><strong>Month:</strong> {{ latestContribution?.month }}</p>
+      <p><strong>Year:</strong> {{ latestContribution?.year }}</p>
+      <p><strong>Investment:</strong> {{ latestContribution?.monthlyInvestment }}</p>
     </div>
   </div>
 
-  <!-- Goal Form Modal -->
   <app-goal-form *ngIf="showGoalModal"
-    [profileId]="userData?.id || 0" 
-    [currentAge]="userData?.age || 0" 
+    [profileId]="profileId"
+    [currentAge]="userData?.age || 18" 
     (goalSet)="handleGoalSet($event)">
   </app-goal-form>
 
-  <!-- Contribution Form Modal -->
   <app-contribution-form *ngIf="showContributionModal"
-    [goalId]="goalData.goalId" 
+    [goalId]="goalData?.goalId"
     (contributionAdded)="handleContributionAdded($event)">
   </app-contribution-form>
+
+  <div *ngIf="showProgressModal" class="progress-modal">
+    <h3>Progress</h3>
+    <p>You have saved <strong>{{ userProgress }}%</strong> of your target savings.</p>
+    <button (click)="showProgressModal = false">Close</button>
+  </div>
 </div>
